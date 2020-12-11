@@ -20,8 +20,8 @@ api = Api(app)
 
 class Morador(Resource):
     def post(self):
-        nome = request.json['cep']
-        envio_cep = requests.get('https://viacep.com.br/ws/{}/json'.format(nome))
+        cep = request.json['cep']
+        envio_cep = requests.get('https://viacep.com.br/ws/{}/json'.format(cep))
 
         dados_endereco = envio_cep.json()
         novo_morador = {
@@ -43,8 +43,32 @@ class Morador(Resource):
 class MoradorById(Resource):
     def get(self, id):
         for morador in moradores:
-            if int (morador['id']) == int(id):
+            if int(morador['id']) == int(id):
                 return morador
+        return jsonify({'mensagem': 'Morador não encontrado'})
+
+    def put(self, id):
+        cep = request.json['cep']
+
+        envio_cep = requests.get('https://viacep.com.br/ws/{}/json'.format(cep))
+        dados_cep = envio_cep.json()
+
+        for morador in moradores:
+            if int(morador['id'] == int(id)):
+                morador['nome'] = request.json['nome']
+                morador['cep'] = request.json['cep']
+                morador['nome_rua'] = dados_cep['logradouro']
+                morador['bairro'] = dados_cep['bairro']
+                morador['localidade'] = dados_cep['localidade']
+                morador['numero'] = request.json['numero']
+                return jsonify({'mensagem': 'Morador alterado com sucesso'})
+        return jsonify({'mensagem': 'Morador não encontrado'})
+
+    def delete(self, id):
+        for morador in moradores:
+            if int(morador['id']) == int(id):
+                moradores.remove(morador)
+                return jsonify({'mensagem': 'Morador deletado com sucesso'})
         return jsonify({'mensagem': 'Morador não encontrado'})
 
 
